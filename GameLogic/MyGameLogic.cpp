@@ -13,6 +13,7 @@
 #include "SceneManager.h"
 #include "Transform.h"
 #include "easylogging++.h"
+#include "NewRender/Core/GERDevice.h"
 
 namespace EventSystem
 {
@@ -31,6 +32,9 @@ namespace GameEngine
     VecterFloat3 rotation(0);
     int MyGameLogic::Initialize()
     {
+		ger::Device *device = ger::Device::getInstance();
+		device->Initialize();
+
         std::string sceneStr = g_pAssetLoader->SyncOpenAndReadTextFileToString("Scene/new.scene");
         auto json = cJSON_Parse(sceneStr.c_str());
         m_Scene = std::make_shared<Scene>();
@@ -70,17 +74,17 @@ namespace GameEngine
             }
         };
         EventSystem::g_pEventDispatcherManager->AddEventListener<EventSystem::KeyEventData>(callback);
+
+        auto trans = m_Scene->GetChildByName("cameraObject")->GetComponent<Transform>();
+        auto m = glm::lookAt(trans->GetPosition(), glm::vec3(0,0,0), glm::vec3(0,1,0));
+        glm::vec3 rotation = RotationMatrixToEulerAngles(m);
+        trans->SetRotation(rotation);
         return 0;
     }
     void MyGameLogic::Finalize() {}
     void MyGameLogic::Tick(float deltaTime)
     {
-        auto trans = m_Scene->GetChildByName("dirLight")->GetComponent<Transform>();
-        rotation.x += (deltaTime * 100 / 10);
-        rotation.y += (deltaTime * 125 / 10);
-        rotation.z += (deltaTime * 150 / 10);
 
-        // trans->SetRotation(rotation);
     }
 
 }  // namespace GameEngine

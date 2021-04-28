@@ -2,6 +2,8 @@
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "easylogging++.h"
+
 
 namespace GameEngine
 {
@@ -18,6 +20,7 @@ namespace GameEngine
 
     bool Shader::CompileSourceCode(const char *source)
     {
+        el::Loggers::getLogger("logger")->info(source);
         const char *COCOS2D_VERTEX_SHADER_UNIFORMS =
             "";
         GLint status;
@@ -64,9 +67,9 @@ namespace GameEngine
                                                 const char *source)
     {
         Shader *shader = new Shader(type);
-        shader->CompileSourceCode(source);
+        bool flag = shader->CompileSourceCode(source);
         m_Shaders.push_back(shader);
-        return true;
+        return flag;
     }
     bool ShaderProgram::AddShaderFromFilePath(ShaderType type,
                                               const char *path)
@@ -83,6 +86,40 @@ namespace GameEngine
         }
         BindPredefinedVertexAttribs();
         glLinkProgram(m_ProgramID);
+
+        GLint attrMaxLength = 0;
+        GLint attrCount = 0;
+        glGetProgramiv(m_ProgramID, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &attrMaxLength);
+        glGetProgramiv(m_ProgramID, GL_ACTIVE_ATTRIBUTES, &attrCount);
+
+        GLchar glName[256];
+        GLsizei glLength;
+        GLsizei glSize;
+        GLenum glType;
+
+        // gpuShader->glInputs.resize(attrCount);
+        for (GLint i = 0; i < attrCount; ++i)
+        {
+            // GLES3GPUInput &gpuInput = gpuShader->glInputs[i];
+
+            memset(glName, 0, sizeof(glName));
+            glGetActiveAttrib(m_ProgramID, i, attrMaxLength, &glLength, &glSize, &glType, glName);
+            char *offset = strchr(glName, '[');
+            if (offset)
+            {
+                glName[offset - glName] = '\0';
+            }
+
+            // GL_CHECK(gpuInput.glLoc = glGetAttribLocation(gpuShader->glProgram, glName));
+            // gpuInput.binding = gpuInput.glLoc;
+            // gpuInput.name = glName;
+            // gpuInput.type = MapType(glType);
+            // gpuInput.stride = GLTypeSize(glType);
+            // gpuInput.count = glSize;
+            // gpuInput.size = gpuInput.stride * gpuInput.count;
+            // gpuInput.glType = glType;
+        }
+
         return true;
     }
 
@@ -194,4 +231,11 @@ namespace GameEngine
                            GL_FALSE, &mat[0][0]);
     }
 
-}  // namespace GameEngine
+    void ShaderProgram::SetVoid(const std::string &name,
+                                const void *value) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(m_ProgramID, name.c_str()), 1,
+                           GL_FALSE, (float *)value);
+    }
+
+} // namespace GameEngine

@@ -6,9 +6,7 @@ Scene/ClassIDs.h
 Scene/Component.h
 Scene/GameObject.h
 Scene/Light.h
-Scene/Material.h
 Scene/Mesh.h
-Scene/MeshRenderer.h
 Scene/Object.h
 Scene/Renderer.h
 Scene/Scene.h
@@ -25,7 +23,6 @@ Scene/IntersectionTests.h
 SET(FRAMEWORK_SCENE_SRC 
 Scene/Camera.cpp
 Scene/GameObject.cpp
-Scene/MeshRenderer.cpp
 Scene/Renderer.cpp
 Scene/Scene.cpp
 Scene/SceneManager.cpp

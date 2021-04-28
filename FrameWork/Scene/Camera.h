@@ -17,8 +17,8 @@ namespace GameEngine
     {
         enum CameraType
         {
-            Perspective = 0,  //透视投影
-            Orthographic = 1  //正交投影
+            Perspective = 0, //透视投影
+            Orthographic = 1 //正交投影
         };
 
     public:
@@ -41,6 +41,7 @@ namespace GameEngine
         virtual void OnSerialize(cJSON *root);
         virtual void OnDeserialize(cJSON *root);
 
+        int GetSplitNum() { return i_SplitNums; }
         glm::float32 GetFieldofView() { return m_FieldofView; }
         glm::float32 GetWidth() { return m_ScreenWidth; }
         glm::float32 GetHeigth() { return m_ScreenHeight; }
@@ -61,11 +62,11 @@ namespace GameEngine
         glm::float32 m_Near;         //近摄像机平面距离
         glm::float32 m_Far;          //远摄像机平面距离
         glm::float32 m_FieldofView;  //摄像机夹角
-
-        glm::float32 m_ScreenWidth;   //屏幕宽度
-        glm::float32 m_ScreenHeight;  //屏幕高度
+        glm::float32 m_ScreenWidth;  //屏幕宽度
+        glm::float32 m_ScreenHeight; //屏幕高度
+        int i_SplitNums = 4;         //分割次数
 
         glm::mat4 m_ProjectionMatrix4_Perspective;
         glm::mat4 m_ProjectionMatrix4_Orthographic;
     };
-}  // namespace GameEngine
+} // namespace GameEngine

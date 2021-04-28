@@ -13,12 +13,10 @@ namespace GameEngine
     class Object;
     class GameObject;
     class ShaderProgramBase;
-    class Material;
     class Mesh;
     class Texture;
     class GameObject;
     class ShaderProgramBase;
-    class Material;
     class Mesh;
     class Texture;
     class Widget;
@@ -29,7 +27,6 @@ namespace GameEngine
 #define SharePtr std::shared_ptr
 #define SharedObject SharePtr<Object>
 #define SharedGameObject SharePtr<GameObject>
-#define SharedMaterial SharePtr<Material>
 #define SharedMesh SharePtr<Mesh>
 #define SharedTexture SharePtr<Texture>
 #define SharedShaderProgramBase SharePtr<ShaderProgramBase>
@@ -87,6 +84,11 @@ namespace GameEngine
         float u_view_matrix[16];
     };
 
+    volatile struct ShadowInfos{
+        float aFragPosLightSpace[16*4];
+        float afarBounds[4];
+    };
+
     /////////////////////////////////
     // 模型信息
     /////////////////////////////////
@@ -107,7 +109,6 @@ namespace GameEngine
 
     struct RendererCammand
     {
-        SharedMaterial material;
         std::vector<ModelRenderConfig> modelConfigs;
     };
     /////////////////////////////////
@@ -148,7 +149,7 @@ namespace GameEngine
         float cutOff;
         float outerCutOff;
 
-        float i[2];  // 手动对齐.....我太菜了
+        float i[2]; // 手动对齐.....我太菜了
 
         float position[4];
         float direction[4];
@@ -158,9 +159,14 @@ namespace GameEngine
         float ambient[4];
         float diffuse[4];
         float specular[4];
+    };
 
-        float u_projection_matrix[16];
-        float u_view_matrix[16];
+    volatile struct LightMatrix
+    {
+        float m_projection[16 * 4];
+        float m_view[16];
+        float f_farbounds[4];
+        float i_count = 0;
     };
 
     volatile struct LightInfo
@@ -181,5 +187,5 @@ namespace GameEngine
 #ifndef ALIGN
 #define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
 #endif
-    const size_t kSizeLightInfo = sizeof(LightInfo);  // CB size is required to be 256-byte aligned.
-}  // namespace GameEngine
+    const size_t kSizeLightInfo = sizeof(LightInfo); // CB size is required to be 256-byte aligned.
+} // namespace GameEngine

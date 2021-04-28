@@ -3,6 +3,7 @@ Render/Sub/ForwardPass.h
 Render/Sub/DeferredPass.h
 Render/Sub/CubPass.h
 Render/Sub/ShadowPass.h
+Render/Sub/CSMTest.h
 )
 
 SET(FRAMEWORK_RENDER_SUB_SRC 

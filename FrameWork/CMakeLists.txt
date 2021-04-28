@@ -4,6 +4,8 @@ ModuleConfig.h
 set(FRAMEWORK_SRC
 main.cpp)
 
+add_subdirectory(NewRender)
+
 include(Common/CMakeLists.txt)
 include(Scene/CMakeLists.txt)
 include(File/CMakeLists.txt)
@@ -21,4 +23,4 @@ add_library(Framework ${FRAMEWORK_SRC})
 find_package(glm CONFIG REQUIRED)
 find_package(cjson CONFIG REQUIRED)
 
-target_link_libraries(Framework PRIVATE cjson glm)
+target_link_libraries(Framework PRIVATE cjson glm GLSL)

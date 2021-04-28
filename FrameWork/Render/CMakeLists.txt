@@ -7,6 +7,7 @@ Render/IPass.h
 Render/ISubPass.h
 Render/GraphicsManager.h
 Render/Frame.h
+Render/ShaderBase.h
 )
 
 SET(FRAMEWORK_RENDER_SRC 

@@ -4,13 +4,12 @@
 #include "GameObject.h"
 #include "GraphicsFunc.h"
 #include "GraphicsManager.h"
-#include "Material.h"
 #include "Mesh.h"
-#include "MeshRenderer.h"
 #include "Scene.h"
 #include "SceneManager.h"
 #include "ShaderManager.h"
 #include "Transform.h"
+#include "ShaderBase.h"
 
 namespace GameEngine
 {
@@ -33,32 +32,24 @@ namespace GameEngine
             auto scene = g_pSceneManager->GetScene();
             auto m_Lights = scene->m_Lights;
             Frame &frame = g_pGraphicsManager->GetFrame();
-            for (auto child : scene->GetChildren())
+            for (auto light : m_Lights)
             {
-                auto meshRender = child.second->GetComponent<MeshRenderer>();
-                if (meshRender && meshRender->GetMesh())
+                for (auto child : scene->GetChildren())
                 {
-                    auto mesh = meshRender->GetMesh();
-                    auto modelMat = child.second->GetComponent<Transform>()->GetMatrix();
-                    auto materials = meshRender->GetMaterials();
-                    int materialID = -1;
-                    for (size_t mi = 0; mi < mesh->m_MeshDatas.size(); mi++)
+                    auto meshRender = child.second->GetComponent<Renderer>();
+                    if (meshRender && meshRender->GetMesh())
                     {
-                        if (mi < materials.size())
-                            materialID = mi;
-                        if (materialID >= 0)
+                        auto mesh = meshRender->GetMesh();
+                        auto modelMat = child.second->GetComponent<Transform>()->GetMatrix();
+                        auto materials = meshRender->GetMaterialPaths();
+                        int materialID = -1;
+                        for (size_t mi = 0; mi < mesh->m_MeshDatas.size(); mi++)
                         {
-                            ModelInfos infos;
-                            GraphicsFunc::PrepareMaterial(materials[materialID], frame);
-                            auto shader = g_pShaderManager->GetShaderProgram(materials[materialID]->shaderID);
-                            memcpy(infos.modelMat4, glm::value_ptr(modelMat), sizeof(float) * 16);
-                            GraphicsFunc::SetModelInfos(infos, frame);
-                            GraphicsFunc::SetUBOData(shader, frame);
+                            ModelRenderConfig config;
+                            config.index = mi;
+                            config.mesh = mesh;
+                            GraphicsFunc::PrepareMesh(config);
                         }
-                        ModelRenderConfig config;
-                        config.index = mi;
-                        config.mesh = mesh;
-                        GraphicsFunc::PrepareMesh(config);
                     }
                 }
             }

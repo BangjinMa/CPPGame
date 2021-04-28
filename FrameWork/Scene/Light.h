@@ -92,25 +92,24 @@ namespace GameEngine
             return BoundingBox(vTransformed, 8, sizeof(glm::vec3));
         }
 
-        // crops the light volume on given frustum (scene-independent projection)
         glm::mat4 CalculateCropMatrix(const Frustum& frustum)
         {
-            glm::mat4 m_mProj = glm::ortho(0.0f, 640.0f, 640.0f, 0.0f, 0.0f, 500.0f);
             glm::mat4 m_mView = GetParent()->GetComponent<Transform>()->GetViewMatrix();
-            glm::mat4 mViewProj = m_mProj* m_mView;
+            glm::mat4 m_mProj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
+            //获得VP
+            glm::mat4 mViewProj = m_mProj * m_mView;
             BoundingBox cropBB;
-
-            // find boundaries in light�s clip space
+            //将AABB顶点转到裁剪空间,并获得新的包围盒
             cropBB = CreateClipSpaceAABB(frustum.m_AABB, mViewProj);
 
-            // use default near plane
-            cropBB.m_vMin.z = 0.0f;
-
-            // finally, create matrix
-            return BuildCropMatrix(cropBB.m_vMin, cropBB.m_vMax) * m_mProj;
+            // 构建投影矩阵的变化矩阵 返回新的VP
+            return BuildCropMatrix(cropBB.m_vMin, cropBB.m_vMax) * m_mProj * m_mView;
         }
 
+        //////////////////////////////////////////////////////////////
+        //构建变换矩阵
+        /////////////////////////////////////////////////////////////
         glm::mat4 BuildCropMatrix(const glm::vec3& vMin, const glm::vec3& vMax)
         {
             float fScaleX, fScaleY, fScaleZ;

@@ -10,7 +10,6 @@
 #include "GraphicsFunc.h"
 #include "IntersectionTests.h"
 #include "Light.h"
-#include "MeshRenderer.h"
 #include "Render/Draw/ForwardDrawPass.h"
 #include "Scene.h"
 #include "SceneManager.h"
@@ -41,7 +40,10 @@ namespace GameEngine
         auto scene = g_pSceneManager->GetScene();
         CalculateLights();
         GraphicsFunc::SetLightInfo(m_LightInfos, m_Frame);
-
+        for (auto pass : m_IDrawPass)
+        {
+            pass->BeginDraw();
+        }
         for (auto camera : scene->m_Cameras)
         {
             auto cameraTs = camera->GetParent()->GetComponent<Transform>();
@@ -66,6 +68,10 @@ namespace GameEngine
                 pass->Draw(camera);
             }
         }
+        for (auto pass : m_IDrawPass)
+        {
+            pass->EndDraw();
+        }
     }
 
     void GraphicsManager::Tick(float deltaTime)
@@ -87,10 +93,7 @@ namespace GameEngine
             auto transfrom = light->GetParent()->GetComponent<Transform>();
             auto pos = transfrom->GetPosition();
             auto dir = -transfrom->GetForward();
-
-            memcpy(m_LightInfos.lights[index].u_projection_matrix, glm::value_ptr(glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, 0.10f, 100.f)), sizeof(float) * 4 * 4);
-            memcpy(m_LightInfos.lights[index].u_view_matrix, glm::value_ptr(transfrom->GetViewMatrix()), sizeof(float) * 4 * 4);
-
+            
             memcpy(m_LightInfos.lights[index].color, glm::value_ptr(light->GetColor()), sizeof(float) * 4);
             memcpy(m_LightInfos.lights[index].position, glm::value_ptr(pos), sizeof(float) * 3);
             memcpy(m_LightInfos.lights[index].direction, glm::value_ptr(dir), sizeof(float) * 3);

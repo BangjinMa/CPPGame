@@ -9,7 +9,6 @@ namespace GameEngine
     ParserManager* ParserManager::_instance = nullptr;
     ParserManager::ParserManager()
     {
-        AddParser(ParserExtType::MTL, new MaterialParser());
         AddParser(ParserExtType::IMAGE, new TextureParser());
         AddParser(ParserExtType::OBJ, new ObjParser());
     }

@@ -27,8 +27,6 @@ namespace GameEngine
 
     private:
         GLFWwindow *window;
-        float _deltaTime;
-        std::chrono::steady_clock::time_point _lastUpdate;
     };
 }  // namespace GameEngine
 #endif  //CPPGAME_COMMON_GAMEPLATFORM_OPENGL_H

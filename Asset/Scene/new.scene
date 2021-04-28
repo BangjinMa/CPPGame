@@ -257,8 +257,8 @@
 			"Children":	[],
 			"Components":	[{
 					"type":	5,
-					"rotation":	[-35, 45, 0],
-					"position":	[6, 6, 6],
+					"rotation":	[-35, 0, 0],
+					"position":	[6, 1, 6],
 					"scale":	[1, 1, 1]
 				}, {
 					"type":	6
@@ -272,7 +272,7 @@
                     "m_Materials":    ["Materials/light_node.gemtl"]
                 }, {
 					"type":	5,
-					"rotation":	[-90, 90, 0],
+					"rotation":	[0,-45,-45],
 					"position":	[-2, 2, 6],
 					"scale":	[1, 1, 1]
                 }, {

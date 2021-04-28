@@ -7,8 +7,8 @@
 #include "Event/KeyEventDispatcher.h"
 #include "InputManager.h"
 #include "Render/GraphicsManager.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+// #include "imgui_impl_glfw.h"
+// #include "imgui_impl_opengl3.h"
 
 namespace EventSystem
 {
@@ -61,11 +61,11 @@ namespace GameEngine
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
 
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 420");
+        // IMGUI_CHECKVERSION();
+        // ImGui::CreateContext();
+        // ImGui::StyleColorsDark();
+        // ImGui_ImplGlfw_InitForOpenGL(window, true);
+        // ImGui_ImplOpenGL3_Init("#version 420");
 
         glfwSetMouseButtonCallback(window, MouseInput);
         glfwSetKeyCallback(window, KeyInput);
@@ -76,9 +76,9 @@ namespace GameEngine
     void OpenGLApplication::Finalize()
     {
         // Cleanup
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
+        // ImGui_ImplOpenGL3_Shutdown();
+        // ImGui_ImplGlfw_Shutdown();
+        // ImGui::DestroyContext();
     }
 
     void OpenGLApplication::Tick(float deltaTime)

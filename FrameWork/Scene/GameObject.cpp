@@ -6,7 +6,6 @@
 #include "Camera.h"
 #include "Component.h"
 #include "Light.h"
-#include "MeshRenderer.h"
 #include "Transform.h"
 
 namespace GameEngine
@@ -179,10 +178,10 @@ namespace GameEngine
             object = std::make_shared<Camera>();
             object->OnDeserialize(root);
             break;
-        case ClassID(MeshRenderer):
-            object = std::make_shared<MeshRenderer>();
-            object->OnDeserialize(root);
-            break;
+		case ClassID(Renderer):
+			object = std::make_shared<Renderer>();
+			object->OnDeserialize(root);
+			break;
         case ClassID(PointLight):
             object = std::make_shared<PointLight>();
             object->OnDeserialize(root);
@@ -240,7 +239,7 @@ namespace GameEngine
 
     void GameObject::CalculateAABB()
     {
-        auto mesh = GetComponent<MeshRenderer>();
+        auto mesh = GetComponent<Renderer>();
 
         if (mesh)
         {

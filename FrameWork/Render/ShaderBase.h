@@ -6,7 +6,6 @@
 #include "Object.h"
 #include "glm/glm.hpp"
 
-
 namespace GameEngine
 {
     class ShaderBase : public Object
@@ -76,7 +75,9 @@ namespace GameEngine
         virtual void setMat3(const std::string &name, const glm::mat3 &mat) const {}
         // ------------------------------------------------------------------------
         virtual void setMat4(const std::string &name, const float *value) const {}
-		virtual void setMat4(const std::string &name, const glm::mat4 &mat) const {}
+        virtual void setMat4(const std::string &name, const glm::mat4 &mat) const {}
+
+        virtual void SetVoid(const std::string &name, const void *value) const {}
 
         virtual bool IsLinked() const { return true; }
         void RemoveAllShaders()
@@ -95,4 +96,4 @@ namespace GameEngine
         int m_ProgramID;
     };
 
-}  // namespace GameEngine
+} // namespace GameEngine

@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "Config.h"
 #include <glad/glad.h>
+#include "Config.h"
 
 namespace GameEngine
 {

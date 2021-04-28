@@ -6,7 +6,6 @@
 #include "ClassIDs.h"
 #include "Config.h"
 #include "IBehaviour.h"
-#include "Material.h"
 #include "Mesh.h"
 #include "Object.h"
 #include "Transform.h"
@@ -14,7 +13,6 @@
 
 namespace GameEngine
 {
-    class Material;
 
     class GameObject : public Object, public IBehaviour
     {
@@ -74,7 +72,6 @@ namespace GameEngine
         std::string m_Name = "";
         bool m_isVisual = true;
         std::weak_ptr<GameObject> m_GameObject;
-        std::vector<SharedMaterial> m_Materials;
     };
 
     template <class T>

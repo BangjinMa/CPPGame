@@ -9,7 +9,6 @@
 #include "BaseApplication.h"
 #include "Camera.h"
 #include "GameObject.h"
-#include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "SceneManager.h"
@@ -17,10 +16,7 @@
 #include "ShaderManager.h"
 #include "easylogging++.h"
 #include "glm/glm.hpp"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-
+#include "../NewRender/Core/GERDevice.h"
 namespace GameEngine
 {
     extern AssetManager *g_pAssetManager;
@@ -35,49 +31,57 @@ namespace GameEngine
         glBindTexture(GL_TEXTURE_2D, id);
         textureIndex++;
     }
-
-    void GraphicsFunc::PrepareMaterial(SharedMaterial material, Frame &frame)
+    void GraphicsFunc::SetTextureArray(SharedShaderProgramBase shader, std::string name, int id)
     {
-        if (material->shaderID <= 0)
-            material->shaderID = g_pShaderManager->AddShaderByPath(
-                material->GetShaderPath(ShaderType::Vertex),
-                material->GetShaderPath(ShaderType::Fragment));
-        auto shader = g_pShaderManager->GetShaderProgram(material->shaderID);
         shader->Use();
-        SetTexture(shader, "shadowMap", frame.shadowMap);
-        for (size_t i = 0; i < material->m_MaterialDatas.size(); i++)
-        {
-            switch (material->m_MaterialDatas[i].m_Type)
-            {
-            case MaterialType::T_Mat4:
-            {
-                auto property = reinterpret_cast<float *>(material->m_MaterialDatas[i].m_Buffer->GetData());
-                shader->setMat4(material->m_MaterialDatas[i].m_Name, &property[0]);
-                break;
-            }
-            case MaterialType::T_Texture:
-            {
-                std::string property = reinterpret_cast<char *>(material->m_MaterialDatas[i].m_Buffer->GetData());
-                int location = glGetUniformLocation(shader->m_ProgramID, material->m_MaterialDatas[i].m_Name.c_str());
-                if (location != -1)
-                {
-                    SharedTexture image = g_pAssetManager->LoadTexture(property);
-                    if (!image)
-                        image = g_pAssetManager->getWhiteTexture();
-                    if (image->id <= 0)
-                    {
-                        BindTexture(image);
-                    }
-                    SetTexture(shader, material->m_MaterialDatas[i].m_Name, image->id);
-                }
-                break;
-            }
-            default:
-                break;
-            }
-        }
-        textureIndex = 0;
+        shader->setInt(name, textureIndex);
+        glActiveTexture(GL_TEXTURE0 + textureIndex);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, id);
+        textureIndex++;
     }
+
+    // void GraphicsFunc::PrepareMaterial(SharedMaterial material, Frame &frame)
+    // {
+    //     if (material->shaderID <= 0)
+    //         material->shaderID = g_pShaderManager->AddShaderByPath(
+    //             material->GetShaderPath(ShaderType::Vertex),
+    //             material->GetShaderPath(ShaderType::Fragment));
+    //     textureIndex = 0;
+    //     auto shader = g_pShaderManager->GetShaderProgram(material->shaderID);
+    //     shader->Use();
+    //     SetTexture(shader, "shadowMap", frame.shadowMap);
+    //     for (size_t i = 0; i < material->m_MaterialDatas.size(); i++)
+    //     {
+    //         switch (material->m_MaterialDatas[i].m_Type)
+    //         {
+    //         case MaterialType::T_Mat4:
+    //         {
+    //             auto property = reinterpret_cast<float *>(material->m_MaterialDatas[i].m_Buffer->GetData());
+    //             shader->setMat4(material->m_MaterialDatas[i].m_Name, &property[0]);
+    //             break;
+    //         }
+    //         case MaterialType::T_Texture:
+    //         {
+    //             std::string property = reinterpret_cast<char *>(material->m_MaterialDatas[i].m_Buffer->GetData());
+    //             int location = glGetUniformLocation(shader->m_ProgramID, material->m_MaterialDatas[i].m_Name.c_str());
+    //             if (location != -1)
+    //             {
+    //                 SharedTexture image = g_pAssetManager->LoadTexture(property);
+    //                 if (!image)
+    //                     image = g_pAssetManager->getWhiteTexture();
+    //                 if (image->id <= 0)
+    //                 {
+    //                     BindTexture(image);
+    //                 }
+    //                 SetTexture(shader, material->m_MaterialDatas[i].m_Name, image->id);
+    //             }
+    //             break;
+    //         }
+    //         default:
+    //             break;
+    //         }
+    //     }
+    // }
 
     void GraphicsFunc::BindTexture(SharedTexture texture)
     {
@@ -159,45 +163,13 @@ namespace GameEngine
 
     void GraphicsFunc::PrepareMesh(ModelRenderConfig config)
     {
+
         auto mesh = config.mesh;
         auto index = config.index;
         if (!mesh)
             return;
-        if (mesh->isPrepare)
-        {
-            glBindVertexArray(mesh->m_MeshDatas[index].VAO);
-            glDrawElements(GL_TRIANGLES, mesh->m_MeshDatas[index].indices.size(), GL_UNSIGNED_INT, 0);
-            glBindVertexArray(0);
-            return;
-        }
-        for (size_t iMesh = 0; iMesh < mesh->m_MeshDatas.size(); iMesh++)
-        {
-            glGenVertexArrays(1, &mesh->m_MeshDatas[iMesh].VAO);
-            glGenBuffers(1, &mesh->m_MeshDatas[iMesh].VBO);
-            glGenBuffers(1, &mesh->m_MeshDatas[iMesh].EBO);
-
-            glBindVertexArray(mesh->m_MeshDatas[iMesh].VAO);
-            // load data into vertex buffers
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->m_MeshDatas[iMesh].VBO);
-            // A great thing about structs is that their memory layout is sequential for all its items.
-            // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-            // again translates to 3/2 floats which translates to a byte array.
-            glBufferData(GL_ARRAY_BUFFER, mesh->m_MeshDatas[iMesh].vertex.size() * sizeof(float), &mesh->m_MeshDatas[iMesh].vertex[0], GL_STATIC_DRAW);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_MeshDatas[iMesh].EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->m_MeshDatas[iMesh].indices.size() * sizeof(unsigned int), &mesh->m_MeshDatas[iMesh].indices[0], GL_STATIC_DRAW);
-            int offest = 0;
-            for (size_t i = 0; i < mesh->m_MeshDatas[iMesh].attribs.size(); i++)
-            {
-                auto data = mesh->m_MeshDatas[iMesh].attribs[i];
-                glEnableVertexAttribArray(data.vertexAttrib);
-                glVertexAttribPointer(data.vertexAttrib, data.size, GL_FLOAT, GL_FALSE, mesh->m_MeshDatas[iMesh].vertexSizeInFloat * sizeof(float), (void *)offest);
-                offest += data.attribSizeBytes;
-            }
-            glBindVertexArray(0);
-        }
-        mesh->isPrepare = true;
-        PrepareMesh(config);
+        ger::Device *device = ger::Device::getInstance();
+        //device->p_GERCommandBuffer->
     }
 
 #pragma region 设置Uniform
@@ -241,6 +213,21 @@ namespace GameEngine
         glBindBuffer(GL_UNIFORM_BUFFER, frame.m_uboModelInfo);
 
         glBufferData(GL_UNIFORM_BUFFER, sizeof(ModelInfos), &infos,
+                     GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    void GraphicsFunc::SetShadowInfos(const ShadowInfos &infos, Frame &frame)
+    {
+        if (frame.m_uboShadowInfos < 0)
+        {
+            glGenBuffers(1, &(GLuint)frame.m_uboShadowInfos);
+        }
+
+        glBindBuffer(GL_UNIFORM_BUFFER, frame.m_uboShadowInfos);
+
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(ShadowInfos), &infos,
                      GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -291,6 +278,20 @@ namespace GameEngine
             glUniformBlockBinding(shader->m_ProgramID, blockIndex, 2);
             glBindBufferBase(GL_UNIFORM_BUFFER, 2, frame.m_uboModelInfo);
         }
+
+        blockIndex = glGetUniformBlockIndex(shader->m_ProgramID, "ShadowInfos");
+        if (blockIndex != GL_INVALID_INDEX)
+        {
+            int32_t blockSize;
+
+            glGetActiveUniformBlockiv(shader->m_ProgramID, blockIndex,
+                                      GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+            int size = sizeof(ShadowInfos);
+            assert(blockSize >= size);
+
+            glUniformBlockBinding(shader->m_ProgramID, blockIndex, 3);
+            glBindBufferBase(GL_UNIFORM_BUFFER, 3, frame.m_uboShadowInfos);
+        }
     }
 
 #pragma endregion
@@ -301,11 +302,12 @@ namespace GameEngine
         const int32_t kShadowMapWidth = 1024;
         const int32_t kShadowMapHeight = 1024;
 
-        glGenFramebuffers(1, &shadowFBO);
+        if (shadowFBO <= 0)
+            glGenFramebuffers(1, &shadowFBO);
+
         glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-        // glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLuint)shadowMap, 0, layerIndex);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow, 0);
-        // Always check that our framebuffer is ok
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLuint)shadow, 0, layerIndex);
+
         auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE)
             assert(0);
@@ -316,23 +318,32 @@ namespace GameEngine
         glClear(GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, kShadowMapWidth, kShadowMapHeight);
     }
-    void GraphicsFunc::EndShadow(unsigned int &shadowFBO)
+    void GraphicsFunc::EndShadow(Frame &frame)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, &shadowFBO);
-        shadowFBO = 0;
         auto config = g_pApp->GetGfxConfiguration();
         glViewport(0, 0, config.screenWidth, config.screenHeight);
     }
+    void GraphicsFunc::GetTextureArray(unsigned int &id, int count)
+    {
+        // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+        const int32_t kShadowMapWidth = 1024;
+        const int32_t kShadowMapHeight = 1024;
+
+        const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, id);
+        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, kShadowMapWidth, kShadowMapHeight, count);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, SHADOW_WIDTH, SHADOW_HEIGHT, count, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    }
+
     int GraphicsFunc::GetShadowArray(unsigned int &shadow)
     {
-        if (shadow > 0)
-        {
-            glDeleteTextures(1, &shadow);
-            shadow = 0;
-
-            // return shadowMap;
-        }
         // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
         const int32_t kShadowMapWidth = 1024;
         const int32_t kShadowMapHeight = 1024;
@@ -350,13 +361,19 @@ namespace GameEngine
         // register the shadow map
         return static_cast<intptr_t>(shadow);
     }
-    void GraphicsFunc::DeleteShadowArrsy(Frame &frame)
+    void GraphicsFunc::DeleteShadowTexture(Frame &frame)
     {
-        GLuint id = (GLuint)frame.shadowMap;
-        if (frame.shadowMap <= 0)
-            return;
-        glDeleteTextures(1, &id);
-        frame.shadowMap = -1;
+        if (frame.shadowMap > 0)
+        {
+            glDeleteTextures(1, &frame.shadowMap);
+            frame.shadowMap = 0;
+        }
+
+        if (frame.sumShadowSTA > 0)
+        {
+            glDeleteTextures(frame.sumShadowCount, &frame.sumShadowSTA);
+            frame.sumShadowCount = 0;
+        }
     }
 
 #pragma endregion
@@ -383,4 +400,4 @@ namespace GameEngine
         glViewport(0, 0, config.screenWidth, config.screenHeight);
     }
 
-}  // namespace GameEngine
+} // namespace GameEngine

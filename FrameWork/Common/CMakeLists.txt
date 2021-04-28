@@ -4,7 +4,6 @@ Common/Config.h
 Common/GfxConfiguration.h
 Common/GfxConfiguration.h
 Common/InputManager.h
-Common/ShaderBase.h
 Common/ShaderManager.h
 Common/IApplication.h
 Common/IRuntimeModule.h

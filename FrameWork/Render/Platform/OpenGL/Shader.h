@@ -51,9 +51,11 @@ namespace GameEngine
         virtual void setMat3(const std::string &name, const glm::mat3 &mat) const override;
         // ------------------------------------------------------------------------
         virtual void setMat4(const std::string &name, const float *value) const override;
-		virtual void setMat4(const std::string &name, const glm::mat4 &mat) const override;
+        virtual void setMat4(const std::string &name, const glm::mat4 &mat) const override;
 
+        virtual void SetVoid(const std::string &name, const void *value) const override;
+        
         void BindPredefinedVertexAttribs();
     };
 
-}  // namespace GameEngine
+} // namespace GameEngine

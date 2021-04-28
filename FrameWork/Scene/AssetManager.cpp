@@ -4,7 +4,6 @@
 #include <mutex>
 
 #include "AssetLoader.h"
-#include "Material.h"
 #include "Parser/ParserManager.h"
 
 namespace GameEngine
@@ -41,20 +40,6 @@ namespace GameEngine
 
         // 	obj = ReadGameObject(ms, SharedGameObject());
         // }
-        return obj;
-    }
-
-    SharedMaterial AssetManager::LoadMaterial(const std::string &path)
-    {
-        if (g_cache.find(path) != g_cache.end())
-        {
-            return std::dynamic_pointer_cast<Material>(g_cache[path]);
-        }
-        SharedMaterial obj =
-            std::dynamic_pointer_cast<Material>(ObjectParser(
-                ParserExtType::MTL, path));
-        if (obj)
-            g_cache[path] = obj;
         return obj;
     }
 

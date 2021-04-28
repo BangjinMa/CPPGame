@@ -16,10 +16,11 @@ namespace GameEngine
 
     int OpenGLShaderManager::AddShaderByString(std::string vspath, std::string fspath)
     {
-        SharedShaderProgramBase shader = std::make_shared<ShaderProgram>();	
-        shader->AddShaderFromSourceCode(ShaderType::Vertex, vspath.c_str());	
-        shader->AddShaderFromSourceCode(ShaderType::Fragment, fspath.c_str());	
-        shader->Link();	
+        SharedShaderProgramBase shader = std::make_shared<ShaderProgram>();
+        bool flag = true;
+        flag = shader->AddShaderFromSourceCode(ShaderType::Vertex, vspath.c_str());
+        flag = shader->AddShaderFromSourceCode(ShaderType::Fragment, fspath.c_str());
+        flag = shader->Link();
         return AddShader(shader);
     }
-}  // namespace GameEngine
+} // namespace GameEngine

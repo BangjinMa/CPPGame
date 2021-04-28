@@ -6,7 +6,6 @@
 
 #include "Config.h"
 #include "IRuntimeModule.h"
-#include "Material.h"
 #include "Mesh.h"
 #include "MyMath.h"
 #include "Render/IDrawPass.h"
